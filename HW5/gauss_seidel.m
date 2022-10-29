@@ -7,7 +7,6 @@ function [ x, n ] = gauss_seidel( A, b, x0, lambda )
     %%Outputs: x - solution to Ax = b
      %         n - number of iterations required
     %%Author: Angel Lopez Pol, University of Florida
-    [A, b] = preprocess(A, b);
     cont = true;
     tolerance = 10^-6;
     dims = size(A);
@@ -20,7 +19,7 @@ function [ x, n ] = gauss_seidel( A, b, x0, lambda )
         k = k + 1; % We start at the 1st iteration
         x0_old = x0;
         for i=1:dims(1)
-            new_x0 = ( b(i) - sum(x0(1:dims(1)).*A(i, 1:dims(1)), 'all') + x0(i)*A(i, i) )/A(i,i);
+            new_x0 = ( b(i) - sum(x0(1:(i-1)).*(A(i, 1:(i-1)).'), 'all') - sum(x0((i+1):dims(1)).*(A(i, (i+1):dims(1)).'), 'all' ))/A(i,i);
             x0(i) = relax_guess(new_x0, x0(i), lambda);
         end
         % By now, all new guesses should have been computed, so we can calculate error
@@ -39,12 +38,12 @@ function [stop] = met_stop_crit(new, old,tolerance)
     % in the guess arrays are converging. If they are, it returns true
     % If they are not, returns false.
 
-    errors = abs((new(1,:)-old(1,:))./new(1,:)) * 100;
+    errors = abs((new(:)-old(:))./new(:))*100;
     dims2 = size(errors);
     % For all errors, if one of them is greater than tolerance, continue
     % Otherwise stop
     for i = 1:dims2(1)
-        if (errors(1,i) >= tolerance)
+        if (errors(i) >= tolerance)
             stop = false;
             return
         end
@@ -89,4 +88,4 @@ function [ index, max_val ] = find_max_in_col(col_index, starting_row, A_matrix,
         max_val = col_of_interest(index);
         index = starting_row + index - 1; % I suppose this works lol
 
-    end
+end
