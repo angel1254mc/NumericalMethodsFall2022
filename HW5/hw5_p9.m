@@ -1,3 +1,39 @@
+% This script has the purpose of performing the calculations needed for
+% Part 9 of Homework 5. I use a preprocessing function to pivot My A and B
+% matrices to make them diagonally dominant :)
+
+lambda_1 = 1; % No Relaxation
+lambda_2 = 0.5; % Some Under-relaxation
+lambda_3 = 1.5; % Successive Over-Relaxation (SOR)
+A_pre = [1 0 1 0; 0 1 0 0; 0 0 2 1; 2 2 0 3];
+b_pre = [3; 8; 5; 29];
+[A, b] = preprocess(A_pre, b_pre);
+x0 = [0; 0; 0; 0;];
+
+[x_1, n1] = gauss_seidel(A, b, x0, lambda_1);
+[x_2, n2] = gauss_seidel(A, b, x0, lambda_2);
+[x_3, n3] = gauss_seidel(A, b, x0, lambda_3);
+
+fprintf("Gauss-Seidel without relaxation: \n");
+fprintf("Iterations: %g\n", n1);
+vec = sprintf('%d; ', x_1);
+fprintf("X value: [%s]\n", vec);
+fprintf("Lambda: %g\n", lambda_1);
+fprintf("\n");
+
+fprintf("Gauss-Seidel with underrelaxation: \n");
+fprintf("Iterations: %g\n", n2);
+vec = sprintf('%d; ', x_2);
+fprintf("X value: [%s]\n", vec);
+fprintf("Lambda: %g\n", lambda_2);
+fprintf("\n");
+
+fprintf("Gauss-Seidel with overrelaxation: \n");
+fprintf("Iterations: %g\n", n3);
+vec = sprintf('%d; ', x_3);
+fprintf("X value: [%s]\n", vec);
+fprintf("Lambda: %g\n", lambda_3);
+fprintf("\n");
 function [ x, n ] = gauss_seidel( A, b, x0, lambda )
     %%gauss_seidel uses the Gauss-Seidel method to solve Ax = b
     %%Inputs: A - A matrix
@@ -7,6 +43,7 @@ function [ x, n ] = gauss_seidel( A, b, x0, lambda )
     %%Outputs: x - solution to Ax = b
      %         n - number of iterations required
     %%Author: Angel Lopez Pol, University of Florida
+    [A, b] = preprocess(A, b);
     cont = true;
     tolerance = 10^-6;
     dims = size(A);
@@ -88,4 +125,4 @@ function [ index, max_val ] = find_max_in_col(col_index, starting_row, A_matrix,
         max_val = col_of_interest(index);
         index = starting_row + index - 1; % I suppose this works lol
 
-end
+    end
