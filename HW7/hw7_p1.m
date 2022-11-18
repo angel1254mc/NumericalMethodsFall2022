@@ -27,7 +27,7 @@ clf;
 % I'll linearize my inputs, then regression_line takes care of the actual
 % regression
 [a_bar_1, r1] = regression_line(x,y); % Line
-[a_bar_2, r2] = regression_line(log10(x),log10(y)); % Power/Parabola
+[a_bar_2, r2] = poly_regression_parab(x,y); % Power/Parabola
 [a_bar_3, r3] = regression_line(x,log(y)); % Exponential
 
 % In order to graph them I gotta delinearize them
@@ -40,7 +40,7 @@ plot(x,y,'o');
 plot(smooth_x, a_bar_1(1) + a_bar_1(2)*smooth_x);
 % I cant believe I took this long to figure out I had to delinearize a for
 % the parabola and exponential function
-plot(smooth_x, (10^a_bar_2(1))*(smooth_x).^a_bar_2(2));
+plot(smooth_x, a_bar_2(3)*(smooth_x).^2 + a_bar_2(2)*(smooth_x) + a_bar_2(1));
 plot(smooth_x, exp(a_bar_3(1))*exp(smooth_x.*a_bar_3(2)));
 
 legend('', 'Original Data Points', 'Line', 'Power/Parabola', 'Exponential');
@@ -53,44 +53,18 @@ function [a_bar, r_squared] = regression_line(x,y)
     % We can find the normal equations for the above equation and use left division
     % We could also use the method outline in the book, much more clean and concise
     Z = [ones(size(x')) x'];
-    a_bar = (Z)\(y');
+     a_bar = (Z'*Z)\(Z'*y');
     Sr = sum((y'-Z*a_bar).^2);
     r_squared = 1 - Sr/sum((y'-mean(y')).^2);
 
     % Now solve for a0, a1, or 'x bar' in Ax=b
 end
 
-
-
-
-function [a_bar] = regression_parab(x,y)
-    Z = [ones(size(x')) (log10(x'))];
-    a_bar = (Z'*Z)\(Z'*(log10(y')));
-    % This function linearizes x^2, and provides me with an a_bar vector
-end
-function [a_bar] = regression_exp(x,y)
-    % This one is going to be a little more complicated because we need
-    % to linearize our exponential for general linear regression,
-    % The book has a really good explanation, however, thruu case study 16.5
-    Z = [ones(size(log(y'))) log(x')];
-    a_bar = (Z'*Z)\(Z'*log(y'));
-
-    % Need to test this out to see if it works
-end
-
-function [a_bar] = poly_regression_parab(x,y)
-    % I'll base my A and b matrices on the normal equations found on page 362 in the book
-    % Also using guidance rom eq. 15.9 in the book
-    A =  [size(x, 1) sum(x) sum(x.^2);
-          sum(x) sum(x.^2) sum(x.^3);
-          sum(x.^2) sum(x.^3) sum(x.^4);
-        ];
-    b = [sum(y); sum(x.*y); sum((x.^2).*y)];
-    % Again, we could also use the method outline in the book, much more clean and concise
+function [a_bar, r_squared] = poly_regression_parab(x,y)
     Z = [ones(size(x')) x' (x').^2];
-    a_bar2 = (Z)\(y');
-
-    a_bar = A\b;
+    a_bar = (Z'*Z)\(Z'*y');
+    Sr = sum((y'-Z*a_bar).^2);
+    r_squared = 1 - Sr/sum((y'-mean(y)).^2);
 end
 
 function [a, r2] = linregr(x,y)
